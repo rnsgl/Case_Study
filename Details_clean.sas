@@ -12,20 +12,42 @@ run;
 
 data out.suplierDetails;
 	set out.products(keep=Supplier);
-	Name = Scan(Supplier, 8, '"');
-	Country = Scan(Supplier, 16, '"');
-	Suplier_ID = Scan(Supplier, 24, '"');
+
+	do i=4 to 20 by 8;
+		if scan(Supplier, i, '"') = 'Name' then
+			Name = scan(Supplier, i+4, '"');
+
+		if scan(Supplier, i, '"') = 'Country' then
+			Country = Scan(Supplier, i+4, '"');
+
+		if scan(Supplier, i, '"') = 'ID' then
+			Suplier_ID = Scan(Supplier, i+4, '"');
+	end;
+
 	drop Supplier;
 run;
 
 data out.ProductDetails;
 	set out.products(keep=Product);
-	Product_name = Scan(Product, 6, '"');
-	Product_Group = Scan(Product, 12, '"');
-	Product_category = Scan(Product, 18, '"');
-	Product_line = Scan(Product, 24, '"');
-	Product_id = Scan(Product, 30, '"');
-	drop Product;
+
+	do i= 3 to 27 by 3;
+		if  scan(Product, i, '"') = ':1,' then
+			Product_name = Scan(Product, i+3, '"');
+
+		if scan(Product, i, '"') = ':2,' then
+			Product_Group = Scan(Product, i+3, '"');
+
+		if scan(Product, i, '"') = ':3,' then
+			Product_category = Scan(Product, i+3, '"');
+
+		if scan(Product, i, '"') = ':4,' then
+			Product_line = Scan(Product, i+3, '"');
+
+		if scan(Product, i, '"') = ':5,' then
+			Product_id = Scan(Product, i+3, '"');
+	end;
+
+	drop Product i;
 run;
 
 data out.jobs;
@@ -35,7 +57,6 @@ data out.jobs;
 	department = Scan(Job, 18, '"');
 	group = Scan(Job, 24, '"');
 	job_role = Scan(Job, 30, '"');
-	 
 	drop Job;
 run;
 
@@ -48,8 +69,10 @@ run;
 
 data out.orders;
 	merge out.orders out.orderdetails;
-	drop order_details;
+	Customer_type = tranwrd(Customer_type, '  ', ' ');
+	
 run;
+
 
 data out.product_cleaned;
 	merge out.productdetails (keep=Product_id Product_name) out.suplierdetails (keep=Suplier_ID);
