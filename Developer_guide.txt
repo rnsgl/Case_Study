@@ -1,0 +1,9 @@
+This documentation is supposed to help you understand this project.
+
+1. Overview of the data flow in the program:
+
+
+
+2. Data processing:
+
+  
