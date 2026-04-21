@@ -6,4 +6,84 @@ This documentation is supposed to help you understand this project.
 
 2. Data processing:
 
+2.1. Data Access and Raw Data Ingestion
+
+A permanent SAS library (OUT) is defined to store all intermediate and final datasets.
+Three external source files are imported:
+
+Orders data from an Excel file (orders.xlsx)
+Organization data from a CSV file (organization.csv)
+Products data from a tab‑delimited text file (products.txt)
+
+
+Each file is loaded into the OUT library as a raw staging table, preserving the original structure.
+
+2.2 Order‑Level Data Enrichment
+
+The raw orders dataset is processed to extract detailed product and pricing information embedded in the order_details field.
+String cleansing is applied to remove special characters (such as colons, commas, brackets, and braces).
+Individual attributes are parsed from the semi‑structured text using positional SCAN logic:
+
+Product ID
+Quantity ordered
+Cost price per unit
+Total retail price
+
+
+The result is a structured order details dataset containing explicit numeric and identifier fields derived from free‑text data.
+
+2.3. Supplier Information Parsing
+
+Supplier data embedded in the products file is extracted and normalized.
+The program loops through repeating patterns in the supplier string to identify key attributes:
+
+Supplier name
+Country
+Supplier ID
+
+
+The semi‑structured supplier information is transformed into a clean, column‑based supplier details dataset.
+
+
+2.4. Product Metadata Extraction
+
+Product‑level attributes are parsed from another semi‑structured field in the products file.
+Repeating tagged values are scanned and mapped into structured columns, including:
+
+Product name
+Product group
+Product category
+Product line
+Product ID
+
+
+This step creates a normalized product details dataset that can be joined and analyzed more easily than the raw text.
+
+
+2.5. Organizational Structure Derivation
+
+Organization data is split into two logical subject areas:
+
+Job structure (division, subdivision, department, group, and job role)
+Management hierarchy (employee ID and superior relationship)
+
+
+Both datasets are derived by parsing structured position‑based values from text fields and removing the original unstructured columns.
+
+
+2.6. Order Data Consolidation
+
+The enriched order details dataset is merged back into the base orders table.
+Minor data cleaning is applied (for example, normalizing spacing in customer type values).
+The resulting orders dataset combines:
+
+Original order attributes
+Parsed product, quantity, and pricing information
+
+
+2.7. Product and Supplier Harmonization
+
+Product and supplier datasets are merged to create a simplified, analysis‑ready product reference table.
+Only core identifiers and descriptive fields (Product ID, Product Name, Supplier ID) are retained.
+This final cleaned product dataset supports consistent joins and reporting across analyses.
   
