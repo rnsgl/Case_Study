@@ -102,16 +102,35 @@ data out.most_Line_by_Age;
 run;
 
 proc sort data=out.most_Line_by_Age;
-	by Age_Group;
+	by Age_Group Product_line;
 run;
-data out.most_Line_by_Age;
+data out.most_Line_by_age_clean;
 	set out.most_Line_by_Age;
+	
+	where not missing(Product_line);
+	
+	by Age_Group Product_line;
+
+	if first.Age_Group or first.Product_line then
+		Quantity =0;
+	Quantity + Quatity;
+
+	if last.Age_Group or last.Product_line;
+	keep Product_line Age_Group Quantity;
+run;
+
+proc sort data=out.most_Line_by_age_clean;
+	by Age_Group Quantity;
+run;
+
+data out.most_Line_by_age_clean_sorted;
+	set out.most_Line_by_Age_clean;
+	
 	
 	
 	by Age_Group;
 
-	if first.Age_Group then Quantity =0;
-	Quantity + Quatity;
+	
 
 	if last.Age_Group;
 	keep Product_line Age_Group Quantity;
