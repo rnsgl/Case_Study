@@ -1,4 +1,5 @@
-%let by = Customer_Type;
+
+%let by = Customer_Activity;
 %let target = Product_line;
 
 proc sql;
@@ -92,7 +93,7 @@ data out.Purchase_by_Age_Group;
 	else if 76<=yrdif(Date, today(),'30/360')<=90 then
 		Age_Group = '76 to 90';
 	else Age_Group = 'other';
-	keep Order_ID Customer_BirthDate Date Age_Group Product_line Quatity Customer_Type;
+	keep Order_ID Customer_BirthDate Date Age_Group Product_line Quatity Customer_Type Customer_Activity;
 run;
 
 proc sort data= out.Purchase_by_Age_Group;
@@ -107,6 +108,16 @@ data out.Purchase_by_Customer_type;
 	set out.ordersLine;
 	by Customer_Type;
 	keep Customer_Type Quatity Product_line Order_ID;
+run;
+
+proc sort data= out.ordersLine;
+	by Customer_Activity;
+run;
+
+data out.Purchase_by_Customer_Activity;
+	set out.ordersLine;
+	by Customer_Activity;
+	keep Customer_Type Quatity Product_line Order_ID Customer_Activity;
 run;
 
 proc sort data= out.ordersLine;
@@ -145,6 +156,9 @@ data out.most_Line_by_Type_sorted;
 	if last.&by;
 	keep Product_line &by Quantity;
 run;
+
+
+
 
 
 
