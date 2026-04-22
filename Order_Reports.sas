@@ -1,5 +1,4 @@
-
-%let by = Customer_Activity;
+%let by = Age_Group;
 %let target = Product_line;
 
 proc sql;
@@ -149,13 +148,17 @@ proc sort data=out.most_Line_by_Type_clean;
 	by &by Quantity;
 run;
 
-data out.most_Line_by_Type_sorted;
+data out.Final_report;
 	set out.most_Line_by_Type_clean;
+	where Quantity le 3000;
 	by &by;
 
 	if last.&by;
 	keep Product_line &by Quantity;
 run;
+
+
+
 
 
 
