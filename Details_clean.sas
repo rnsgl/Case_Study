@@ -70,9 +70,23 @@ run;
 data out.orders;
 	merge out.orders out.orderdetails;
 	Customer_type = tranwrd(Customer_type, '  ', ' ');
-	
-run;
+	length Customer_Activity $30;
 
+	if index(Customer_type, 'medium activity')>0  than do;
+	Customer_Activity = 'Medium activity' ;
+	Customer_type=tranwrd(Customer_type,'medium activity','');
+	end;
+	
+	else if index(Customer_type, 'high activity')>0  than do;
+	Customer_Activity = 'High activity';
+	Customer_type=tranwrd(Customer_type,'high activity','');
+	end;
+	else if  index(Customer_type, 'low activity')>0 than do;
+	Customer_Activity = 'Low activity';
+	Customer_type=tranwrd(Customer_type,'low activity');
+	end;
+	else Customer_Activity = 'Not available';
+run;
 
 data out.product_cleaned;
 	merge out.productdetails (keep=Product_id Product_name) out.suplierdetails (keep=Suplier_ID);
