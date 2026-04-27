@@ -1,30 +1,48 @@
-%let by = Name;
+%let by = Country;
 %let target = Product_line;
 
-proc sql;
+
+%let profitable = "True";
+
+title1 "Product Quantity Report";
+title2 "Sorted by Quantity in Descending Order";
+proc sql outobs=5;
+
 	SELECT Product_id, Sum(input(Quatity, best.)) AS Quantity
 		FROM out.orders
 			Group by Product_id
 				ORDER BY Quantity DESC;
 quit;
 
-proc sql outobs=3;
-	SELECT Product_line,Sum(input(Quatity,best.)) AS Quantity
+title1 "Product Line Revenue Report";
+title2 "Quantity and Revenue Analysis";
+proc sql outobs=5;
+CREATE TABLE out.Line_By_Quantity AS 
+	SELECT Product_line,Sum(input(Quatity,best.)) AS Quantity ,
+		CASE 
+			WHEN &profitable LIKE "True" THEN
+			SUM(input(Quatity,best.)* input(CostPrice_per_unit,best.))
+			ELSE .
+		END 
+	AS Revenue
 		FROM out.ordersLine
 			Group by Product_line
 				ORDER BY Quantity DESC;
 quit;
 
-proc sql;
+title1 "Quantity by Product Line and Type";
+title2 "Temporary Table Creation";
+proc sql outobs=5;
 	CREATE TABLE qtn_by_type as
-		SELECT Product_line, Type, Sum(input(Quatity,best.)) AS Quantity
+		SELECT Product_line, Order_Type, Sum(input(Quatity,best.)) AS Quantity
 			FROM out.ordersLine
-				Group by Type, Product_line 
+				Group by Order_Type, Product_line 
 					ORDER BY Quantity DESC;
 quit;
 
-proc sql;
-	SELECT Product_line, Type, Quantity
+title1 "Maximum Quantity by Product Line and Type";
+proc sql outobs=5;
+	SELECT Product_line, Order_Type, Quantity
 		FROM qtn_by_type as a
 			WHERE a.Quantity = (
 				SELECT MAX(b.Quantity)
@@ -92,41 +110,18 @@ data out.Purchase_by_Age_Group;
 	else if 76<=yrdif(Date, today(),'30/360')<=90 then
 		Age_Group = '76 to 90';
 	else Age_Group = 'other';
-	keep Order_ID Customer_BirthDate Date Age_Group Product_line Quatity Customer_Type Customer_Activity Name;
-run;
-
-proc sort data= out.Purchase_by_Age_Group;
-	by Order_ID;
+	
 run;
 
 proc sort data= out.ordersLine;
-	by Customer_Type;
+	by &by;
 run;
 
-data out.Purchase_by_Customer_type;
+
+
+data out.Purchase_by_&by;
 	set out.ordersLine;
-	by Customer_Type;
-	keep Customer_Type Quatity Product_line Order_ID;
-run;
-
-proc sort data= out.ordersLine;
-	by Customer_Activity;
-run;
-
-data out.Purchase_by_Customer_Activity;
-	set out.ordersLine;
-	by Customer_Activity;
-	keep Customer_Type Quatity Product_line Order_ID Customer_Activity;
-run;
-
-proc sort data= out.ordersLine;
-	by Name;
-run;
-
-data out.Purchase_by_Name;
-	set out.ordersLine;
-	by Name;
-	keep Customer_Type Quatity Product_line Order_ID Customer_Activity Name;
+	by &by;
 run;
 
 
@@ -142,7 +137,7 @@ proc sort data= out.Purchase_by_&by;
 	by &by Product_line;
 run;
 
-data out.most_Line_by_Type_clean;
+data out.most_Line_&by;
 	set out.Purchase_by_&by;
 	where not missing(Product_line);
 	by &by Product_line;
@@ -155,19 +150,18 @@ data out.most_Line_by_Type_clean;
 	keep Product_line &by Quantity;
 run;
 
-proc sort data=out.most_Line_by_Type_clean;
+proc sort data=out.most_Line_&by;
 	by &by Quantity;
 run;
 
-data out.Final_report;
-	set out.most_Line_by_Type_clean;
+data out.Final_report_&by;
+	set out.most_Line_&by;
 	where Quantity le 3000;
 	by &by;
 
 	if last.&by;
 	keep Product_line &by Quantity;
 run;
-
 
 
 
