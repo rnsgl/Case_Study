@@ -1,4 +1,4 @@
-*tabela só com vendedores;
+*table with only the sellers;
 proc sort data=out.orders;
    by Employee_ID;
 run;
@@ -14,7 +14,7 @@ data out.ambos;
    if a and b;
 run;
 
-*extração da hierarquia dos managers;
+*extract the hierarchy of managers ;
 data out.Employee_Superiors;
     set out.ambos(keep=Employee_ID Manager_Hierarchy);
 
@@ -41,7 +41,7 @@ data out.Employee_Superiors;
     drop i level manager_id Manager_Hierarchy;
 run;
 
-*extrair informação do role;
+*extract role information;
 data out.jobs_Employee;
     set out.ambos(keep=Employee_ID Job);
 
@@ -54,7 +54,7 @@ data out.jobs_Employee;
     drop Job;
 run;
 
-*merge da hierarquia com detalhes do role;
+*merge hierarchy with role details;
 proc sort data=out.Employee_Superiors;
     by Employee_ID;
 run;
@@ -70,7 +70,7 @@ data out.Employee_Superiors_Jobs;
     if a and b;
 run;
 
-*tabela com nomes dos managers diretos indiretos + info do role;
+*table with direct and indirect managers names + role info;
 proc sql;
     create table out.Employee_Jobs_Superior_Final as
     select 
@@ -102,7 +102,7 @@ proc sql;
     ;
 quit;
 
-*Total_retail_price passa a numérico;
+*Total_retail_price to numeric;
 data out.orderdetails_num;
     set out.orderdetails;
 
@@ -111,7 +111,7 @@ data out.orderdetails_num;
     rename Total_retail_price_num = Total_retail_price;
 run;
 
-*Total de vendas por vendedor;
+*Total sales for each seller;
 proc sql;
     create table out.Sales_By_Employee as
     select
@@ -134,7 +134,7 @@ data out.Top5_Sellers;
 run;
 
 
-*Calcular bonus;
+*Calculate bonus;
 proc sql;
     create table out.Top5_Sellers_Bonus as
     select
@@ -143,4 +143,5 @@ proc sql;
         Total_Sales * 0.05 as Bonus format=comma12.2
     from out.Top5_Sellers;
 quit;
+
 
