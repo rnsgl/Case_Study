@@ -91,6 +91,18 @@ data out.orders;
 	Customer_Activity = 'Low activity';
 	Customer_type=tranwrd(Customer_type,'low activity','');
 	end;
+	else if index(Customer_type, 'Internet')>0 than do;
+		Customer_Activity = 'Not applicable';
+	end;
+	
+	else if index(Customer_type, 'high activity')>0  than do;
+	Customer_Activity = 'High activity';
+	Customer_type=tranwrd(Customer_type,'high activity','');
+	end;
+	else if  index(Customer_type, 'low activity')>0 than do;
+	Customer_Activity = 'Low activity';
+	Customer_type=tranwrd(Customer_type,'low activity','');
+	end;
 	else Customer_Activity = 'Not available';
 run;
 

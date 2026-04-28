@@ -1,5 +1,13 @@
 %let by = Country;
 %let target = Product_line;
+
+
+%let profitable = "True";
+
+title1 "Product Quantity Report";
+title2 "Sorted by Quantity in Descending Order";
+proc sql outobs=5;
+
 %let profitable = "True";
 
 proc sql;
@@ -9,6 +17,10 @@ proc sql;
 				ORDER BY Quantity DESC;
 quit;
 
+title1 "Product Line Revenue Report";
+title2 "Quantity and Revenue Analysis";
+proc sql outobs=5;
+CREATE TABLE out.Line_By_Quantity AS 
 proc sql;
 	SELECT Product_line,Sum(input(Quatity,best.)) AS Quantity ,
 		CASE 
@@ -22,14 +34,19 @@ proc sql;
 				ORDER BY Quantity DESC;
 quit;
 
-proc sql;
+title1 "Quantity by Product Line and Type";
+title2 "Temporary Table Creation";
+proc sql outobs=5;
 	CREATE TABLE qtn_by_type as
-		SELECT Product_line, Type, Sum(input(Quatity,best.)) AS Quantity
+		SELECT Product_line, Order_Type, Sum(input(Quatity,best.)) AS Quantity
 			FROM out.ordersLine
-				Group by Type, Product_line 
+				Group by Order_Type, Product_line 
 					ORDER BY Quantity DESC;
 quit;
 
+title1 "Maximum Quantity by Product Line and Type";
+proc sql outobs=5;
+	SELECT Product_line, Order_Type, Quantity
 proc sql;
 	SELECT Product_line, Type, Quantity
 		FROM qtn_by_type as a
@@ -99,12 +116,25 @@ data out.Purchase_by_Age_Group;
 	else if 76<=yrdif(Date, today(),'30/360')<=90 then
 		Age_Group = '76 to 90';
 	else Age_Group = 'other';
+	
+run;
+
+proc sort data= out.ordersLine;
+	by &by;
 	keep Order_ID Customer_BirthDate Date &by;
 run;
 
 proc sort data= out.Purchase_by_Age_Group;
 	by Order_ID;
 run;
+
+
+
+data out.Purchase_by_&by;
+	set out.ordersLine;
+	by &by;
+run;
+
 
 proc sort data= out.ordersLine;
 	by &by;
@@ -116,6 +146,15 @@ data out.Purchase_by_&by;
 	keep Customer_Type Quatity Product_line Order_ID &by;
 run;
 
+proc sort data=out.Purchase_by_Age_Group;
+	by &by;
+run;
+
+proc sort data= out.Purchase_by_&by;
+	by &by Product_line;
+run;
+
+data out.most_Line_&by;
 proc sort data= out.ordersLine;
 	by Order_ID;
 run;
@@ -141,6 +180,12 @@ data out.most_Line_by_Type_clean;
 	keep Product_line &by Quantity;
 run;
 
+proc sort data=out.most_Line_&by;
+	by &by Quantity;
+run;
+
+data out.Final_report_&by;
+	set out.most_Line_&by;
 proc sort data=out.most_Line_by_Type_clean;
 	by &by Quantity;
 run;
@@ -153,3 +198,14 @@ data out.Final_report;
 	if last.&by;
 	keep Product_line &by Quantity;
 run;
+
+
+
+
+
+
+
+
+
+
+
