@@ -8,6 +8,9 @@ title1 "Product Quantity Report";
 title2 "Sorted by Quantity in Descending Order";
 proc sql outobs=5;
 
+%let profitable = "True";
+
+proc sql;
 	SELECT Product_id, Sum(input(Quatity, best.)) AS Quantity
 		FROM out.orders
 			Group by Product_id
@@ -18,6 +21,7 @@ title1 "Product Line Revenue Report";
 title2 "Quantity and Revenue Analysis";
 proc sql outobs=5;
 CREATE TABLE out.Line_By_Quantity AS 
+proc sql;
 	SELECT Product_line,Sum(input(Quatity,best.)) AS Quantity ,
 		CASE 
 			WHEN &profitable LIKE "True" THEN
@@ -43,6 +47,8 @@ quit;
 title1 "Maximum Quantity by Product Line and Type";
 proc sql outobs=5;
 	SELECT Product_line, Order_Type, Quantity
+proc sql;
+	SELECT Product_line, Type, Quantity
 		FROM qtn_by_type as a
 			WHERE a.Quantity = (
 				SELECT MAX(b.Quantity)
@@ -115,6 +121,11 @@ run;
 
 proc sort data= out.ordersLine;
 	by &by;
+	keep Order_ID Customer_BirthDate Date &by;
+run;
+
+proc sort data= out.Purchase_by_Age_Group;
+	by Order_ID;
 run;
 
 
@@ -125,6 +136,25 @@ data out.Purchase_by_&by;
 run;
 
 
+proc sort data= out.ordersLine;
+	by &by;
+run;
+
+data out.Purchase_by_&by;
+	set out.ordersLine;
+	by &by;
+	keep Customer_Type Quatity Product_line Order_ID &by;
+run;
+
+proc sort data=out.Purchase_by_Age_Group;
+	by &by;
+run;
+
+proc sort data= out.Purchase_by_&by;
+	by &by Product_line;
+run;
+
+data out.most_Line_&by;
 proc sort data= out.ordersLine;
 	by Order_ID;
 run;
@@ -137,7 +167,7 @@ proc sort data= out.Purchase_by_&by;
 	by &by Product_line;
 run;
 
-data out.most_Line_&by;
+data out.most_Line_by_Type_clean;
 	set out.Purchase_by_&by;
 	where not missing(Product_line);
 	by &by Product_line;
@@ -156,6 +186,12 @@ run;
 
 data out.Final_report_&by;
 	set out.most_Line_&by;
+proc sort data=out.most_Line_by_Type_clean;
+	by &by Quantity;
+run;
+
+data out.Final_report;
+	set out.most_Line_by_Type_clean;
 	where Quantity le 3000;
 	by &by;
 
