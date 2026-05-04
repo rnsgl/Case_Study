@@ -78,6 +78,8 @@ data out.orders;
 	Customer_type = tranwrd(Customer_type, '  ', ' ');
 	length Customer_Activity $30;
 
+	if Name = 'L\u00fcna sastreria S.A.' then Name = 'Lüna sastreria S.A.';
+	
 	if index(Customer_type, 'medium activity')>0  than do;
 	Customer_Activity = 'Medium activity' ;
 	Customer_type=tranwrd(Customer_type,'medium activity','');
