@@ -1,0 +1,117 @@
+proc print data=out.orders;
+run;
+
+data out.orderDetails;
+	set out.orders;
+	*order_details = compress(order_details, ':,');
+	Product_id = Scan(order_details,5,'"');
+	Quatity = Scan(order_details,9,'"');
+	CostPrice_per_unit = Scan(order_details,13,'"');
+	Total_retail_price = Scan(order_details,17, '"');
+	Total_retail_price = compress(Total_retail_price, ']{}');
+	drop order_details;
+run;
+
+
+
+data out.suplierDetails;
+	set out.products(keep=Supplier);
+
+	do i=4 to 20 by 8;
+		if scan(Supplier, i, '"') = 'Name' then
+			Name = scan(Supplier, i+4, '"');
+
+		if scan(Supplier, i, '"') = 'Country' then
+			Country = Scan(Supplier, i+4, '"');
+
+		if scan(Supplier, i, '"') = 'ID' then
+			Suplier_ID = Scan(Supplier, i+4, '"');
+	end;
+
+	drop Supplier;
+run;
+
+data out.ProductDetails;
+	set out.products(keep=Product);
+
+	do i= 3 to 27 by 3;
+		if  scan(Product, i, '"') = ':1,' then
+			Product_name = Scan(Product, i+3, '"');
+
+		if scan(Product, i, '"') = ':2,' then
+			Product_Group = Scan(Product, i+3, '"');
+
+		if scan(Product, i, '"') = ':3,' then
+			Product_category = Scan(Product, i+3, '"');
+
+		if scan(Product, i, '"') = ':4,' then
+			Product_line = Scan(Product, i+3, '"');
+
+		if scan(Product, i, '"') = ':5,' then
+			Product_id = Scan(Product, i+3, '"');
+	end;
+
+	drop Product i;
+run;
+
+data out.jobs;
+	set out.organization(keep=Job);
+	division= Scan(Job, 6, '"');
+	sub_division = Scan(Job, 12, '"');
+	department = Scan(Job, 18, '"');
+	group = Scan(Job, 24, '"');
+	job_role = Scan(Job, 30, '"');
+	drop Job;
+run;
+
+
+data out.ManagerHierarchy;
+	set out.organization(keep=Manager_Hierarchy);
+	Employee_id = Scan(Manager_Hierarchy, 6, '"');
+	Superior = Scan(Manager_Hierarchy, 12, '"');
+	drop Manager_Hierarchy;
+run;
+
+*Adicionar as rows com "problemas" à tabela "invalid_data";
+data out.invalid_data;
+	set out.orderdetails; 
+	where Employee_ID = 99999999 or Product_id = ".";
+	*(ID errado ou Product_ID vazio);
+run;
+
+*só depois de guardar as rows com problemas é que as retiramos;
+
+data out.orderdetails_clean;
+	set out.orderdetails;
+	rename Quatity=Quantity;
+	CostPrice_per_unit_num = round(input(CostPrice_per_unit, best12.), 0.1);
+	Total_retail_price_num = round(input(Total_retail_price, best12.), 0.1);
+	Product_id_num = round(input(Product_id, best12.), 0.1);
+	Quantity_num = round(input(Quantity, best12.), 0.1);
+	if Employee_ID ne 99999999;
+	if Product_id_num ne "";
+	drop Product_id CostPrice_per_unit Quantity Total_retail_price;
+run;
+
+
+data out.orderdetails;
+	*voltar a dar o nome original;
+	set out.orderdetails_clean; rename
+CostPrice_per_unit_num=CostPrice_per_unit 
+Total_retail_price_num=Total_retail_price
+Product_id_num=Product_id
+Quantity_num=Quantity;
+run;
+*Também devemos trocar as datas para numerico para depois dar parav aplicar a função format;
+
+
+data out.orders;
+	merge out.orders out.orderdetails;
+	Customer_type = tranwrd(Customer_type, '  ', ' ');
+	
+run;
+
+
+data out.product_cleaned;
+	merge out.productdetails (keep=Product_id Product_name) out.suplierdetails (keep=Suplier_ID);
+run;
