@@ -37,7 +37,8 @@ Research topics:
   Map_Orders.sas: It makes a map with the orders quantity by country
   
   not_sold.sas: Makes a report about the products not sold
-  
+
+  For the Employee Report you should start by running the "Pre_Employee_Report.sas" file before running the "Employee_Report.sas" file.
 
 
 
